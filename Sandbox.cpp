@@ -7,19 +7,16 @@ Sandbox::Sandbox()
 
 void Sandbox::openAndRun(string prog)
 {
-	ifstream progFile(prog);
+	ifstream progFile(prog.c_str());
 
     if(!progFile)
-    {
-		error = true;
-		errorMessage = "Could not open file.";
-    }
+        setErrorMessage("Could not open file");
 	else
 	{
 		mode = "interactive"; //start in interactive mode
 		string instrLine;
 
-		while(getline(progFile, instrLine)) //Store the program in memory to allow for jumping
+		while(getline(progFile, instrLine)) //Store the program in memory to allow for jumping around
 			instructions.push_back(instrLine);
 
 		for(size_t i = 0; i < instructions.size(); i++)
@@ -33,15 +30,9 @@ void Sandbox::openAndRun(string prog)
 				jump = 0;
 
 				if(i < 0)
-				{
-					error = true;
-					errorMessage = "Jump is out of bounds. (Too far back)";
-				}
+				    setErrorMessage("Jump is out of bounds. (Too far back)");
 				else if (i >= instructions.size())
-				{
-					error = true;
-					errorMessage = "Jump is out of bounds. (Too far ahead)";
-				}
+				    setErrorMessage("Jump is out of bounds. (Too far ahead)");
 			}
 		}
 
@@ -66,18 +57,8 @@ void Sandbox::processInstruction(string instr)
 		{
 			mode = "run_program";
 		}
-		else if(keyword == "SET") //Set a variable
-		{
-			string variable;
-			string value;
-
-			iss >> variable;
-			iss >> value;
-
-			memory[variable] = value;
-		}
-		else if(keyword == "ADD" || keyword == "SUB" || keyword == "DIV" || keyword == "MUL" || keyword == "POW" || keyword == "SQRT" || keyword == "CP" || 
-				keyword == "BEQ" || keyword == "BNE" || keyword == "BGE" || keyword == "BLE")
+		else if(keyword == "ADD" || keyword == "SUB" || keyword == "DIV" || keyword == "MUL" || keyword == "POW" || keyword == "SQRT" ||
+                keyword == "CP" || keyword == "SET"||keyword == "BEQ" || keyword == "BNE" || keyword == "BGE" || keyword == "BLE")
 		{
 			string param0;
 			string param1;
@@ -90,113 +71,91 @@ void Sandbox::processInstruction(string instr)
 			iss >> param1;
 			iss >> param2;
 
+			if(!validVariable(param0) && !(keyword == "BEQ" || keyword == "BNE" || keyword == "BGE" || keyword == "BLE")) //exceptions for branch instructions. Really ugly ;_;
+			{
+			    setErrorMessage("Invalid variable name");
+			    break;
+			}
+
 			//if the parameters contain a letter, treat it as a variable
 			if(containsAlpha(param1))
 			{
 				if(memory.find(param1) == memory.end())
 				{
-					error = true;
-					errorMessage = "Variable '"+ param1 + "' does not exist.";
-					break;
+				    setErrorMessage("Variable '"+ param1 + "' does not exist.");
+				    break;
 				}
 				else
-				{
-					param1Double = atof(memory[param1].c_str());
-				}
+					param1Double = memory[param1];
 			}
 			else
-				param1Double = atof(param1.c_str());
+				param1Double = atof(param1.c_str()); //convert the string input into double
 
-			if(containsAlpha(param2)) 
+			if(containsAlpha(param2))
 			{
 				if(memory.find(param2) == memory.end())
 				{
-					error = true;
-					errorMessage = "Variable '"+ param2 + "' does not exist.";
-					break;
+				    setErrorMessage("Variable '"+ param2 + "' does not exist.");
+				    break;
 				}
 				else
-				{
-					param2Double = atof(memory[param2].c_str());
-				}
+					param2Double = memory[param2];
 			}
 			else
 				param2Double = atof(param2.c_str());
 
 			if(!error)
 			{
+			    if(keyword == "SET") //Set a variable
+                {
+                    saveToMemory(param0, param1Double);
+                }
 				//Arithmetic
 				if(keyword == "ADD")
 				{
-					double d = param1Double + param2Double;
-					memory[param0] = to_string(static_cast<double long>(d));
+				    saveToMemory(param0, param1Double + param2Double);
 				}
 				else if(keyword == "SUB")
 				{
-					double d = param1Double - param2Double;
-					memory[param0] = to_string(static_cast<double long>(d));
+				    saveToMemory(param0, param1Double - param2Double);
 				}
 				else if (keyword == "DIV")
 				{
 					if(param2Double == 0)
-					{
-						error = true;
-						errorMessage = "Dividing by zero is illegal. User reported to the NSA.";
-					}
+					    setErrorMessage("Dividing by zero is illegal. User reported to the NSA.");
 					else
-					{
-						double d = param1Double / param2Double;
-						memory[param0] = to_string(static_cast<double long>(d));
-					}
+                        saveToMemory(param0, param1Double / param2Double);
 				}
 				else if (keyword == "MUL")
 				{
-					double d = param1Double * param2Double;
-					memory[param0] = to_string(static_cast<double long>(d));
+				    saveToMemory(param0, param1Double * param2Double);
 				}
 				else if (keyword == "POW")
 				{
 					if(param1Double == 0 && param2Double < 0)
-					{
-						error = true;
-						errorMessage = "Result is undefined";
-					}
+					    setErrorMessage("Result is undefined");
 					else if(param1Double < 0 && param2Double < 1 && param2Double > 0)
-					{
-						error = true;
-						errorMessage = "Negative numbers cannot be raised by a fractional power";
-					}
+					    setErrorMessage("Negative numbers cannot be raised by a fractional power");
 					else
-					{
-						double d = pow(param1Double,param2Double);
-						memory[param0] = to_string(static_cast<double long>(d));
-					}
+                        saveToMemory(param0, pow(param1Double,param2Double));
 				}
 				else if(keyword == "SQRT")
 				{
 					if(param1Double < 0)
-					{
-						error = true;
-						errorMessage = "Cannot square root negative numbers";
-					}
+					    setErrorMessage("Cannot square root negative numbers");
 					else
-					{
-						double d = sqrt(param1Double);
-						memory[param0] = to_string(static_cast<double long>(d));
-					}
+                        saveToMemory(param0, sqrt(param1Double));
 				}
 				else if(keyword == "CP")
 				{
-					memory[param0] = to_string(static_cast<double long>(param1Double));
+				    saveToMemory(param0, param1Double);
 				}
 				else if(keyword == "BEQ" || keyword == "BNE" || keyword == "BGE" || keyword == "BLE")
 				{
 					int param0Int;
 					if(containsAlpha(param0))
 					{
-						error = true;
-						errorMessage = "Invalid parameter for BEQ: "+param0;
-						break;
+						setErrorMessage("Invalid parameter for BEQ: "+param0);
 					}
 					else
 						param0Int = atoi(param0.c_str());
@@ -224,10 +183,7 @@ void Sandbox::processInstruction(string instr)
 				}
 			}
 			else
-			{
 				displayErrorMessage();
-				break;
-			}
 		}
 		else if(keyword == "PRINT")
 		{
@@ -235,19 +191,18 @@ void Sandbox::processInstruction(string instr)
 			iss >> str;
 
 			if(memory.find(str) == memory.end())
-			{
-				error = true;
-				errorMessage = "Variable '"+ str + "' does not exist.";
-				break;
-			}
+				setErrorMessage("Variable '"+ str + "' does not exist.");
 			else
-			{
-				cout << floor(atof(memory[str].c_str()) * 1000 + 0.5)/1000 << endl; //convert string from memory to double, then round it
-			}
+				cout << floor((memory[str]) * 1000 + 0.5)/1000 << endl; //convert string from memory to double, then round it
 		}
 		else if(keyword == "clear")
 		{
 			cout << string(100, '\n');
+		}
+		else if(keyword == "clearmem")
+		{
+		    memory.clear();
+		    cout << "Memory cleared\n";
 		}
 		else if (keyword == "exit")
 		{
@@ -271,6 +226,12 @@ bool Sandbox::isClosed()
 	return exit;
 }
 
+void Sandbox::setErrorMessage(string message)
+{
+    error = true;
+	errorMessage = message;
+}
+
 string Sandbox::getErrorMessage()
 {
 	return errorMessage;
@@ -292,6 +253,18 @@ void Sandbox::displayErrorMessage()
 	}
 }
 
+void Sandbox::saveToMemory(string var, double value)
+{
+    if(memory.size() < MAX_MEMORY)
+    {
+        if(validVariable(var))
+            memory[var] = value;
+        else
+            setErrorMessage("Invalid variable namea");
+    }
+    else setErrorMessage("Memory limit hit");
+}
+
 bool Sandbox::containsAlpha(string str)
 {
 	for(string::size_type i = 0; i < str.size(); ++i)
@@ -300,4 +273,15 @@ bool Sandbox::containsAlpha(string str)
 			return true;
 	}
 	return false;
+}
+
+bool Sandbox::validVariable(string var)
+{
+    bool valid = true;
+    for(string::size_type i = 0; i < var.size(); ++i)
+    {
+        if(!isalpha(var[i]) && !isdigit(var[i]))
+            valid = false;
+    }
+    return valid;
 }
