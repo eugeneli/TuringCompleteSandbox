@@ -1,0 +1,4 @@
+SET n 10
+PRINT n
+ADD n n -1
+BNE -3 n 0
