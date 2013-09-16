@@ -1,16 +1,19 @@
 #include "Sandbox.h"
 
 Sandbox::Sandbox()
-	: mode("interactive"), jump(0), error(false), exit(false), errorMessage("")
+: mode("interactive"), jump(0), error(false), exit(false), errorMessage("")
 {
 }
 
 void Sandbox::openAndRun(string prog)
 {
-	ifstream progFile(prog.c_str());
+    ifstream progFile(prog.c_str());
 
     if(!progFile)
+    {
+        mode = "interactive";
         setErrorMessage("Could not open file");
+    }
 	else
 	{
 		mode = "interactive"; //start in interactive mode
@@ -71,7 +74,7 @@ void Sandbox::processInstruction(string instr)
 			iss >> param1;
 			iss >> param2;
 
-			if(!validVariable(param0) && !(keyword == "BEQ" || keyword == "BNE" || keyword == "BGE" || keyword == "BLE")) //exceptions for branch instructions. Really ugly ;_;
+			if(!validVariable(param0) && !(keyword == "BEQ" || keyword == "BNE" || keyword == "BGE" || keyword == "BLE")) //Make exceptions for branch instructions. Really ugly ;_;
 			{
 			    setErrorMessage("Invalid variable name");
 			    break;
@@ -104,6 +107,7 @@ void Sandbox::processInstruction(string instr)
 			else
 				param2Double = atof(param2.c_str());
 
+            //If no error, do the operations
 			if(!error)
 			{
 			    if(keyword == "SET") //Set a variable
@@ -193,7 +197,7 @@ void Sandbox::processInstruction(string instr)
 			if(memory.find(str) == memory.end())
 				setErrorMessage("Variable '"+ str + "' does not exist.");
 			else
-				cout << floor((memory[str]) * 1000 + 0.5)/1000 << endl; //convert string from memory to double, then round it
+				cout << floor((memory[str]) * 1000 + 0.5)/1000 << endl; //round it
 		}
 		else if(keyword == "clear")
 		{
@@ -260,7 +264,7 @@ void Sandbox::saveToMemory(string var, double value)
         if(validVariable(var))
             memory[var] = value;
         else
-            setErrorMessage("Invalid variable namea");
+            setErrorMessage("Invalid variable name");
     }
     else setErrorMessage("Memory limit hit");
 }
