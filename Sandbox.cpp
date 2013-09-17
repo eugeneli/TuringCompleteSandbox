@@ -61,7 +61,7 @@ void Sandbox::processInstruction(string instr)
 			mode = "run_program";
 		}
 		else if(keyword == "ADD" || keyword == "SUB" || keyword == "DIV" || keyword == "MUL" || keyword == "POW" || keyword == "SQRT" ||
-                keyword == "CP" || keyword == "SET"||keyword == "BEQ" || keyword == "BNE" || keyword == "BGE" || keyword == "BLE")
+                keyword == "CP" || keyword == "SET"||keyword == "BEQ" || keyword == "BNE" || keyword == "BGE" || keyword == "BLE" || keyword == "BGT" || keyword == "BLT")
 		{
 			string param0;
 			string param1;
@@ -74,7 +74,7 @@ void Sandbox::processInstruction(string instr)
 			iss >> param1;
 			iss >> param2;
 
-			if(!validVariable(param0) && !(keyword == "BEQ" || keyword == "BNE" || keyword == "BGE" || keyword == "BLE")) //Make exceptions for branch instructions. Really ugly ;_;
+			if(!validVariable(param0) && !(keyword == "BEQ" || keyword == "BNE" || keyword == "BGE" || keyword == "BLE" || keyword == "BGT" || keyword == "BLT")) //Make exceptions for branch instructions. Really ugly ;_;
 			{
 			    setErrorMessage("Invalid variable name");
 			    break;
@@ -154,7 +154,7 @@ void Sandbox::processInstruction(string instr)
 				{
 				    saveToMemory(param0, param1Double);
 				}
-				else if(keyword == "BEQ" || keyword == "BNE" || keyword == "BGE" || keyword == "BLE")
+				else if(keyword == "BEQ" || keyword == "BNE" || keyword == "BGE" || keyword == "BLE" || keyword == "BGT" || keyword == "BLT")
 				{
 					int param0Int;
 					if(containsAlpha(param0))
@@ -182,6 +182,16 @@ void Sandbox::processInstruction(string instr)
 					else if(keyword == "BLE")
 					{
 						if(param1Double <= param2Double)
+							jump = param0Int;
+					}
+					else if(keyword == "BGT")
+					{
+					    if(param1Double > param2Double)
+							jump = param0Int;
+					}
+					else if(keyword == "BLT")
+					{
+					    if(param1Double < param2Double)
 							jump = param0Int;
 					}
 				}

@@ -1,14 +1,14 @@
-SET n 0
-
+SET n 10
+SET i 0
 SQRT root5 5
 ADD x 1 root5
-POW x x n
+POW x x i
 SUB y 1 root5
-POW y y n
+POW y y i
 SUB numerator x y
-POW 2pow 2 n
+POW 2pow 2 i
 MUL denominator 2pow root5
 DIV result numerator denominator
 PRINT result
-ADD n n 1
-BNE -13 n 10
+ADD i i 1
+BNE -12 i n
