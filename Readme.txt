@@ -1,30 +1,18 @@
-DOCUMENTATION
-=============
-Load and run a program from command line: sandbox program.txt
+README
+======
+Run make in the source directory or do
+g++ main.cpp Sandbox.cpp Sandbox.h -o sandbox
 
-Sandbox Instructions
-load		- Asks user for name of program file to load and run
+Run the example programs by doing: 
+./sandbox count.txt
+./sandbox fibonacci.txt
 
-clear           - Clears the screen
-
-clearmem        - Clears the sandbox memory
-
-exit            - Exits the sandbox
+or launch the sandbox and type "load" or "LOAD" to have it prompt you for the filename of your progam
 
 
-ADD result var1 var2		  - Addition:       result = var1 + var2
-SUB result var1 var2              - Subtraction:    result = var1 - var2
-DIV result var1 var2              - Division:       result = var1 / var2
-MUL result var1 var2              - Multiplication: result = var1 * var2
-POW result var1 var2              - Raise to power: result = var1 ^ var2
-SQRT result var1                  - Square root:    result = sqrt(var1)
+EXAMPLE PROGRAMS
+================
+Program to count from 10 to 1: count.txt
+Program to compute first 10 fibonacci numbers: fibonacci.txt
 
-CP var1 var2                      - Copy variable:  var1 = var2 (where var2 is a variable)
-SET var1 var2                     - Sets var1:      var1 = var2 (where var2 can be a number or variable)
-
-BEQ jump var1 var2                - If var1 == var2: stackPointer += jump
-BNE jump var1 var2                - If var1 != var2: stackPointer += jump
-BGE jump var1 var2                - If var1 >= var2: stackPointer += jump
-BLE jump var1 var2                - If var1 <= var2: stackPointer += jump
-
-PRINT var                         - Prints out the value of variable, var
+Full documentation is in the documentation.pdf file.
